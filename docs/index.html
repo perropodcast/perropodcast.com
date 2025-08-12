@@ -214,5 +214,30 @@ a[href*="tiktok"], a[href*="twitch"] {
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    fetch('https://ipapi.co/json/')
+    .then(response => response.json())
+    .then(data => {
+        const visitorData = {
+            datetime: new Date().toLocaleString(),
+            ip: data.ip || "N/A",
+            country: data.country_name || "N/A",
+            city: data.city || "N/A",
+            browser: navigator.userAgent,
+            os: navigator.platform,
+            resolution: window.screen.width + "x" + window.screen.height
+        };
+        fetch("https://script.google.com/macros/s/AKfycbwgkrvb_wRAGOM2LRV6Bv-YJM_MXy8lEkbaYirq9pTHKkoHyqWrlvmWBT3OGPOxGk8nHw/exec", {
+            method: "POST",
+            body: JSON.stringify(visitorData)
+        }).then(res => console.log("Datos enviados a Google Sheets:", visitorData))
+          .catch(err => console.error("Error enviando datos:", err));
+    })
+    .catch(err => console.error("Error obteniendo IP:", err));
+});
+</script>
+
 </body>
 </html>
