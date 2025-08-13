@@ -213,5 +213,150 @@ a[href*="tiktok"], a[href*="twitch"] {
 <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
+<!-- ====== Visor 3D: Conoce a nuestro compañero (Perro azul) ====== -->
+<section id="companero-3d" style="padding:48px 0; background-color:inherit;">
+<div class="container" style="max-width:1100px;margin:0 auto;">
+<h2 style="text-align:center; margin:0 0 10px; font-size:clamp(24px, 3vw, 36px);">Conoce a nuestro compañero</h2>
+<p style="text-align:center; opacity:.8; margin:0 0 24px;">Gíralo con el mouse o el dedo. La animación está siempre activa.</p>
+<div id="viewer3d" style="opacity:1;">
+<canvas id="canvas3d" style="width:100%; height:540px; display:block; border-radius:16px;"></canvas>
+</div>
+</div>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.179.0/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script>
+const canvas = document.getElementById('canvas3d');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+function resize() {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#ececec');
+
+const camera = new THREE.PerspectiveCamera(50, 16/9, 0.1, 100);
+camera.position.set(1.4, 1.0, 2.2);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0.7, 0);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.0));
+const dir = new THREE.DirectionalLight(0xffffff, 1.1);
+dir.position.set(3, 5, 2);
+scene.add(dir);
+
+// === Perro estilizado azul ===
+const BLUE_MAIN = '#1e40ff';
+const BLUE_DARK = '#172fb3';
+const BLUE_LIGHT = '#4f6bff';
+
+const fur = new THREE.MeshStandardMaterial({ color: BLUE_MAIN, metalness: 0.05, roughness: 0.9 });
+const furDark = new THREE.MeshStandardMaterial({ color: BLUE_DARK, metalness: 0.05, roughness: 0.95 });
+const furLight = new THREE.MeshStandardMaterial({ color: BLUE_LIGHT, metalness: 0.05, roughness: 0.9 });
+const noseMat = new THREE.MeshStandardMaterial({ color: '#222', metalness: 0.3, roughness: 0.6 });
+const eyeWhite = new THREE.MeshStandardMaterial({ color: '#fafafa', metalness: 0.0, roughness: 0.4 });
+const eyeBlack = new THREE.MeshStandardMaterial({ color: '#111', metalness: 0.7, roughness: 0.4 });
+
+const dog = new THREE.Group();
+scene.add(dog);
+
+const body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), fur);
+body.position.set(0, 0.5, 0);
+dog.add(body);
+
+const chest = new THREE.Mesh(new THREE.SphereGeometry(0.42, 32, 32), furLight);
+chest.position.set(0.05, 0.53, 0.12);
+dog.add(chest);
+
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.32, 32, 32), fur);
+head.position.set(0.35, 0.95, 0.0);
+dog.add(head);
+
+const snout = new THREE.Mesh(new THREE.SphereGeometry(0.18, 32, 32), furDark);
+snout.position.set(0.48, 0.88, 0);
+snout.scale.set(1.2, 0.8, 0.9);
+dog.add(snout);
+
+const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), noseMat);
+nose.position.set(0.58, 0.86, 0);
+dog.add(nose);
+
+const earGeo = new THREE.ConeGeometry(0.12, 0.22, 24);
+const earL = new THREE.Mesh(earGeo, furDark);
+earL.position.set(0.28, 1.06, -0.12);
+earL.rotation.z = Math.PI * 0.1;
+dog.add(earL);
+const earR = earL.clone();
+earR.position.z = 0.12;
+earR.rotation.z = -Math.PI * 0.1;
+dog.add(earR);
+
+const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), eyeWhite);
+eyeL.position.set(0.41, 0.95, -0.08);
+const pupilL = new THREE.Mesh(new THREE.SphereGeometry(0.03, 16, 16), eyeBlack);
+pupilL.position.set(0.05, -0.005, 0.02);
+eyeL.add(pupilL);
+dog.add(eyeL);
+
+const eyeR = eyeL.clone();
+eyeR.position.z = 0.08;
+dog.add(eyeR);
+
+const legGeo = new THREE.CylinderGeometry(0.08, 0.09, 0.35, 24);
+function leg(x,z,mat){
+  const m = new THREE.Mesh(legGeo, mat || furDark);
+  m.position.set(x, 0.28, z);
+  return m;
+}
+dog.add(leg(0.1,-0.18));
+dog.add(leg(0.1, 0.18));
+
+const thighGeo = new THREE.SphereGeometry(0.22, 24, 24, 0, Math.PI*2, 0, Math.PI/2);
+const thighL = new THREE.Mesh(thighGeo, fur);
+thighL.position.set(-0.18, 0.35, -0.16);
+dog.add(thighL);
+const thighR = thighL.clone();
+thighR.position.z = 0.16;
+dog.add(thighR);
+
+const tailGeo = new THREE.CylinderGeometry(0.035, 0.05, 0.6, 16);
+const tail = new THREE.Mesh(tailGeo, furDark);
+const tailPivot = new THREE.Group();
+tailPivot.position.set(-0.45, 0.70, 0);
+tail.rotation.z = Math.PI/2.3;
+tailPivot.add(tail);
+dog.add(tailPivot);
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(2.2, 64), new THREE.MeshStandardMaterial({ color: '#dcdcdc', roughness: 0.95 }));
+ground.rotation.x = -Math.PI/2;
+ground.position.y = 0;
+scene.add(ground);
+
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = 0.016;
+  t += dt;
+  const breathe = 1 + Math.sin(t*1.2) * 0.02;
+  body.scale.set(1, breathe, 1);
+  chest.scale.set(1.02, 1 + Math.sin(t*1.2)*0.025, 1.02);
+  tailPivot.rotation.y = Math.sin(t*6.0) * 0.5;
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+resize();
+window.addEventListener('resize', resize);
+animate();
+</script>
 </body>
 </html>
